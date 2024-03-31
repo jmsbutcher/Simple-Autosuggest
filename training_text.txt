@@ -1,0 +1,2225 @@
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStateContainer.h ===
+#pragma once
+
+#include <memory>
+
+#include "BallStateInterface.h"
+
+
+class BallStateContainer {
+
+public:
+	BallStateContainer();
+
+	// Add a state to the container.
+	// The state can then be accessed either by name or by ID.
+	// If you do not specify an ID, the container will assign a default ID
+	// that starts at 0 and increments by 1 for each state you add.
+	void Add(std::shared_ptr<BallStateInterface> state, int id = -1);
+
+	// Retrieve a state by name. Throws invalid_argument exception if not found.
+	std::shared_ptr<BallStateInterface> Get(std::string state_name);
+
+	// Retrieve a state by ID. Throws invalid_argument exception if not found.
+	std::shared_ptr<BallStateInterface> Get(int state_id);
+
+private:
+	struct Impl;
+	std::shared_ptr<Impl> impl;
+	int idCounter = 0;
+
+};
+
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStateInterface.h ===
+#pragma once
+
+#include <string>
+
+
+class BallStateInterface {
+
+public:
+	virtual std::string GetName() const = 0;
+
+	// 7/9/23 - NEW - implementing saving and loading from file functionality
+	virtual void Save(std::string filePath) = 0;
+	virtual void Load(std::string filePath) = 0;
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStateContainer.cpp ===
+#include <map>
+
+#include "BallStateContainer.h"
+
+using namespace std;
+
+
+struct BallStateContainer::Impl {
+	map<int, shared_ptr<BallStateInterface>> mapIDToState;
+	map<string, shared_ptr<BallStateInterface>> mapNameToState;
+};
+
+
+
+BallStateContainer::BallStateContainer() {
+	impl = make_shared<Impl>();
+}
+
+
+void BallStateContainer::Add(shared_ptr<BallStateInterface> state, int id) {
+
+}
+
+shared_ptr<BallStateInterface> BallStateContainer::Get(string state_name) {
+	return shared_ptr<BallStateInterface>();
+}
+
+shared_ptr<BallStateInterface> BallStateContainer::Get(int state_id) {
+	return shared_ptr<BallStateInterface>();
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStateDataOutput\BallStateDataOutputInterface.h ===
+#pragma once
+
+#include <string>
+
+#include "StateData.h"
+
+
+class BallStateDataOutputInterface {
+
+public:
+	virtual void Present(const StateData& data) = 0;
+	void SetFieldName(const std::string& field_name) { fieldName = field_name; }
+
+protected:
+	std::string fieldName;
+
+};
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStateDataOutput\StateData.h ===
+#pragma once
+
+#include <map>
+#include <string>
+
+
+class StateData {
+
+public:
+	__declspec(dllexport) void AddField(const std::string& field_name);
+	__declspec(dllexport) double GetFieldValueByName(const std::string& field_name) const;
+	__declspec(dllexport) void SetFieldValue(const std::string& field_name, double value);
+
+protected:
+	std::map<std::string, double> mapNameToValue;
+
+};
+
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStateDataOutput\StateData.cpp ===
+#include "StateData.h"
+
+using namespace std;
+
+
+bool contains(map<string, double> m, string key) {
+	if (m.find(key) != m.end())
+		return true;
+	return false;
+}
+
+
+void StateData::AddField(const string& field_name) {
+	if (!contains(mapNameToValue, field_name))
+		mapNameToValue[field_name];
+}
+
+double StateData::GetFieldValueByName(const string& field_name) const {
+	if (contains(mapNameToValue, field_name))
+		return mapNameToValue.at(field_name);
+	return 0.0;
+}
+
+void StateData::SetFieldValue(const string& field_name, double value) {
+	if (contains(mapNameToValue, field_name))
+		mapNameToValue[field_name] = value;
+}
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStates\BS_Height.h ===
+//#pragma once
+//
+//#include "BallStateInterface.h"
+//
+//
+//class BS_Height : public BallStateInterface {
+//
+//private:
+//	double height_m;
+//
+//public:
+//	__declspec(dllexport) std::string GetName() const override;
+//
+//	__declspec(dllexport) double GetHeightInMeters() const;
+//	__declspec(dllexport) void SetHeightInMeters(double h);
+//
+//	__declspec(dllexport) bool HitSurface() const;
+//	__declspec(dllexport) void Bounce();
+//	__declspec(dllexport) void ApplyVelocity(double velocity_m_s, int time_s = 1);
+//
+//};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStates\BS_Velocity.h ===
+//#pragma once
+//
+//#include "BallStateInterface.h"
+//
+//
+//class BS_Velocity : public BallStateInterface {
+//
+//protected:
+//	double velocity_m_s = 0.0;
+//
+//public:
+//	__declspec(dllexport) std::string GetName() const override;
+//
+//	__declspec(dllexport) double GetVelocityInMetersPerSecond() const;
+//	__declspec(dllexport) void SetVelocity(double v_in_m_s); //meters per second
+//
+//	__declspec(dllexport) void Reverse();
+//	__declspec(dllexport) void ApplyAcceleration(double acceleration_m_s2, int time_s = 1); // meters per second squared
+//};
+//
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStates\BS_Height.cpp ===
+//#include "BS_Height.h"
+//
+//using namespace std;
+//
+//
+//string BS_Height::GetName() const {
+//	return "Height";
+//}
+//
+//double BS_Height::GetHeightInMeters() const {
+//	return height_m;
+//}
+//
+//void BS_Height::SetHeightInMeters(double h) {
+//	height_m = h;
+//}
+//
+//bool BS_Height::HitSurface() const {
+//	return (height_m <= 0.0);
+//}
+//
+//void BS_Height::Bounce() {
+//	height_m = -height_m;
+//}
+//
+//void BS_Height::ApplyVelocity(double velocity_m_s, int time_s) {
+//	height_m += velocity_m_s * time_s;
+//}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallStateInterface\BallStates\BS_Velocity.cpp ===
+//#include "BS_Velocity.h"
+//
+//using namespace std;
+//
+//
+//string BS_Velocity::GetName() const {
+//	return "Velocity";
+//}
+//
+//double BS_Velocity::GetVelocityInMetersPerSecond() const {
+//	return velocity_m_s;
+//}
+//
+//void BS_Velocity::SetVelocity(double v_in_m_s) {
+//	velocity_m_s = v_in_m_s;
+//}
+//
+//void BS_Velocity::Reverse() {
+//	velocity_m_s = -velocity_m_s;
+//}
+//
+//void BS_Velocity::ApplyAcceleration(double acceleration_m_s2, int time_s) {
+//	velocity_m_s += acceleration_m_s2 * time_s;
+//}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallState_Height\BS_Height.h ===
+#pragma once
+
+#include "../BallStateInterface/BallStateInterface.h"
+
+
+class BS_Height : public BallStateInterface {
+
+public:
+	__declspec(dllexport) std::string GetName() const override;
+	__declspec(dllexport) void Save(std::string filePath) override;
+	__declspec(dllexport) void Load(std::string filePath) override;
+
+	__declspec(dllexport) double GetHeightInMeters() const;
+	__declspec(dllexport) void SetHeightInMeters(double h);
+
+	__declspec(dllexport) bool HitSurface() const;
+	__declspec(dllexport) void Bounce();
+	__declspec(dllexport) void ApplyVelocity(double velocity_m_s, int time_s = 1);
+
+
+private:
+	double height_m;
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallState_Height\BS_Height.cpp ===
+#include "BS_Height.h"
+
+using namespace std;
+
+
+string BS_Height::GetName() const {
+	return "Height";
+}
+
+
+void BS_Height::Save(std::string filePath) {
+	// TODO
+
+}
+
+void BS_Height::Load(std::string filePath) {
+	// TODO
+
+}
+
+
+double BS_Height::GetHeightInMeters() const {
+	return height_m;
+}
+
+void BS_Height::SetHeightInMeters(double h) {
+	height_m = h;
+}
+
+bool BS_Height::HitSurface() const {
+	return (height_m <= 0.0);
+}
+
+void BS_Height::Bounce() {
+	height_m = -height_m;
+}
+
+void BS_Height::ApplyVelocity(double velocity_m_s, int time_s) {
+	height_m += velocity_m_s * time_s;
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallState_Velocity\BS_Velocity.h ===
+#pragma once
+
+#include "../BallStateInterface/BallStateInterface.h"
+
+
+class BS_Velocity : public BallStateInterface {
+
+public:
+	__declspec(dllexport) std::string GetName() const override;
+	__declspec(dllexport) void Save(std::string filePath) override;
+	__declspec(dllexport) void Load(std::string filePath) override;
+
+	__declspec(dllexport) double GetVelocityInMetersPerSecond() const;
+	__declspec(dllexport) void SetVelocity(double v_in_m_s); //meters per second
+
+	__declspec(dllexport) void Reverse();
+	__declspec(dllexport) void ApplyAcceleration(double acceleration_m_s2, int time_s = 1); // meters per second squared
+
+
+private:
+	double velocity_m_s = 0.0;
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BallState_Velocity\BS_Velocity.cpp ===
+#include "BS_Velocity.h"
+
+using namespace std;
+
+
+string BS_Velocity::GetName() const {
+	return "Velocity";
+}
+
+void BS_Velocity::Save(std::string filePath) {
+	//TODO
+}
+
+void BS_Velocity::Load(std::string filePath) {
+	//TODO
+}
+
+double BS_Velocity::GetVelocityInMetersPerSecond() const {
+	return velocity_m_s;
+}
+
+void BS_Velocity::SetVelocity(double v_in_m_s) {
+	velocity_m_s = v_in_m_s;
+}
+
+void BS_Velocity::Reverse() {
+	velocity_m_s = -velocity_m_s;
+}
+
+void BS_Velocity::ApplyAcceleration(double acceleration_m_s2, int time_s) {
+	velocity_m_s += acceleration_m_s2 * time_s;
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\DLLFunctionInterface.h ===
+// DLL Function Interface - Handles loading an individual function from
+// an already loaded DLL library.
+// Each concrete implementation must derive from this interface and 
+// implement 2 methods:
+//	1. ReturnDefault() - Supplies a default value to return if function is NULL.
+//	2. GetFuncName() - Defines which function to load from the DLL. 
+//		The name must match exactly.
+
+#include <iostream>
+#include <string>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#pragma once
+
+
+template <typename ReturnType>
+class DLLFunctionInterface {
+
+public:
+
+	// Get the value returned by the loaded DLL function.
+	// If no function loaded, returns a default value.
+	//	- The default value is defined by ReturnDefault()
+	ReturnType Get();
+
+	// After loading a DLL library into an HINSTANCE, provide it to this
+	// object so it can the load its function from it.
+	//	- The function to be loaded is defined by GetFuncName()
+	void SetDLL(HINSTANCE _dll) {
+		dll = _dll;
+		LoadFunc();
+	}
+
+protected:
+
+	HINSTANCE dll = NULL;
+	typedef ReturnType(__cdecl* GetFunc) ();
+	GetFunc getFunc = NULL;
+
+	bool loadedFuncSuccessfully = false;
+
+	void LoadFunc();
+	// Provides a default value to return when getFunc not loaded.
+	virtual ReturnType ReturnDefault() = 0;
+	// Defines which function to load from the DLL. The name must match exactly.
+	virtual std::string GetFuncName() = 0;
+
+};
+
+
+template<typename ReturnType>
+inline ReturnType DLLFunctionInterface<ReturnType>::Get() {
+	if (getFunc != NULL)
+		return getFunc();
+	else
+		return ReturnDefault();
+}
+
+template<typename ReturnType>
+inline void DLLFunctionInterface<ReturnType>::LoadFunc() {
+	if (dll != NULL)
+		getFunc = (GetFunc)GetProcAddress(dll, GetFuncName().c_str());
+	else
+		std::cout << "Can't load " << GetFuncName() <<
+		" function. DLL not loaded.\n";
+
+	if (getFunc == NULL)
+		std::cout << "Couldn't load " << GetFuncName() << " function.\n";
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\DLLFunction_CreateTechnique.h ===
+#pragma once
+
+#include "DLLFunctionInterface.h"
+#include "../TechniqueInterface/TechniqueInterface.h"
+
+class DLLFunction_CreateTechnique : public DLLFunctionInterface<TechniqueInterface*> {
+	 
+protected:
+
+	TechniqueInterface* ReturnDefault() override { return nullptr; }
+	std::string GetFuncName() override { return "CreateTechniqueInstance"; };
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\DLLFunction_GetTechniqueName.h ===
+#pragma once
+
+#include "DLLFunctionInterface.h"
+
+
+class DLLFunction_GetTechniqueName : public DLLFunctionInterface<const char*> {
+
+protected:
+
+	const char* ReturnDefault() override { return "---"; }
+	std::string GetFuncName() override { return "GetTechniqueName"; };
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\DLLGateway.h ===
+// DLL Gateway - for loading DLLs when using Windows.
+// 
+// - Adapted and simplified from prototype developed in LearningDLLs project.
+// 
+// 7/1/23
+
+#pragma once
+
+#include <string>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+
+class DLLGateway {
+
+public:
+	DLLGateway();
+	~DLLGateway();
+
+	void LoadDLL(std::string dllFileName);
+	bool LoadSuccessful();
+	HINSTANCE GetDLL();
+
+private:
+	HINSTANCE dll = NULL;
+	bool loadedDllSuccessfully = false;
+
+	void ClearCurrentlyLoadedDLL();
+	void LoadDLLFromFilename(std::string dllFileName);
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\Stage.h ===
+#pragma once
+
+#include <memory>
+#include <thread>
+
+#include "../TechniqueInterface/TechniqueInterface.h"
+
+
+class Stage {
+
+public:
+	__declspec(dllexport) Stage(TechniqueInterface* _technique);
+	__declspec(dllexport) ~Stage();
+
+	__declspec(dllexport) void Step();
+	__declspec(dllexport) void Start();
+	__declspec(dllexport) void Stop();
+	__declspec(dllexport) void SetSpeed(int speedLevel); // 1 - 10
+	__declspec(dllexport) bool IsRunning(); // 1 - 10
+
+protected:
+	TechniqueInterface* technique = nullptr;
+
+	bool running = false;
+	int stepIntervalInMs = 1000;
+	std::shared_ptr<std::thread> runningThread;
+	void Run();
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\TechniqueLoader.h ===
+// Technique Loader - Handles loading and returning Technique Implementations.
+
+#pragma once
+
+#include <memory>
+#include <vector>
+
+#include "../TechniqueInterface/TechniqueInterface.h"
+
+
+class TechniqueLoader {
+public:
+	__declspec(dllexport) TechniqueLoader();
+	__declspec(dllexport) ~TechniqueLoader();
+
+	// Returns names of all Technique DLLs detected.
+	__declspec(dllexport) std::vector<std::string> GetAllAvailableTechniques();
+
+	__declspec(dllexport) void LoadTechniqueByName(std::string name);
+	__declspec(dllexport) bool LoadSuccesssful();
+
+	// Creates and returns a Technique instance from the currently loaded DLL.
+	__declspec(dllexport) TechniqueInterface* GetTechnique();
+
+private:
+	class Impl;
+	std::unique_ptr<Impl> impl;
+};
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\DLLGateway.cpp ===
+#include <iostream>
+
+#include "DLLGateway.h"
+
+using namespace std;
+
+
+DLLGateway::DLLGateway() {
+}
+
+DLLGateway::~DLLGateway() {
+	if (loadedDllSuccessfully)
+		FreeLibrary(dll);
+}
+
+void DLLGateway::LoadDLL(std::string dllFileName) {
+	ClearCurrentlyLoadedDLL();
+	LoadDLLFromFilename(dllFileName);
+}
+
+bool DLLGateway::LoadSuccessful() {
+	return loadedDllSuccessfully;
+}
+
+HINSTANCE DLLGateway::GetDLL() {
+	return dll;
+}
+
+void DLLGateway::ClearCurrentlyLoadedDLL() {
+	if (dll != NULL)
+		FreeLibrary(dll);
+}
+
+void DLLGateway::LoadDLLFromFilename(std::string dllFileName) {
+	// Convert DLL file name from string to LPCWSTR needed by LoadLibrary
+	wstring temp = wstring(dllFileName.begin(), dllFileName.end());
+	LPCWSTR formattedDllFileName = temp.c_str();
+
+	dll = LoadLibrary(formattedDllFileName);
+
+	if ((dll) == NULL) {
+		loadedDllSuccessfully = false;
+		cout << "Couldn't load DLL.\n";
+	}
+	else
+		loadedDllSuccessfully = true;
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\Main.cpp ===
+
+//
+// Currently unused - was formerly a workbench for early development
+// 
+
+#include <iostream>
+#include <string>
+
+#include "Stage.h"
+
+//#include "Techniques/Technique_Undamped.h"
+
+//#include "BallStateDataOutput/HeightPresenter.h"
+
+using namespace std;
+
+
+bool isInteger(string s) {
+    for (char c : s) {
+        if (!isdigit(c))
+            return false;
+    }
+    return true;
+}
+
+
+int main() {
+    cout << "Welcome to Bouncy Ball Studio!\n";
+
+    // Instantiate Bounce Technique impl
+    //  - In this case: Undamped Bounce
+    //shared_ptr<TechniqueInterface> technique = make_shared<Technique_Undamped>();
+
+    //shared_ptr<HeightPresenter> heightPresenter = make_shared<HeightPresenter>();
+    //technique->AddDataOutputInterface(heightPresenter);
+
+    // Instantiate Bouncy Ball Stage, which will hold and run the technique + ball states
+    //Stage stage(technique);
+
+
+    /*cout << "Enter number of steps or 'q' to quit: ";
+    string inputValue = "";
+    while (true) {
+        cin >> inputValue;
+        if (inputValue == "q")
+            break;
+        if (isInteger(inputValue)) {
+            for (int i = 0; i < stoi(inputValue); i++) {
+                stage.Step();
+            }
+        }
+    }*/
+
+
+}
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\Stage.cpp ===
+
+#include "Stage.h"
+
+using namespace std;
+
+
+Stage::Stage(TechniqueInterface* _technique) {
+	technique = _technique;
+	SetSpeed(5);
+}
+
+Stage::~Stage() {
+	running = false;
+}
+
+void Stage::Step() {
+	if (technique)
+		technique->Step();
+}
+
+
+void Stage::Start() {
+	running = true;
+	runningThread = make_shared<thread>(&Stage::Run, this);
+	runningThread->detach();
+}
+
+void Stage::Stop() {
+	running = false;
+}
+
+void Stage::SetSpeed(int speedLevel) {
+	stepIntervalInMs = 100 / speedLevel;
+}
+
+bool Stage::IsRunning() {
+	return running;
+}
+
+
+void Stage::Run() {
+	while (running) {
+		Step();
+		this_thread::sleep_for(chrono::milliseconds(stepIntervalInMs));
+	}
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio\TechniqueLoader.cpp ===
+// Used pImpl idiom to hide Windows library from the header file
+//
+// 7/1/23 - Future improvements:
+//  Shift from using pImpl idiom to using an interface for loading
+//  all dynamically-linked libraries and mapping them by name.
+//  Can then implement this interface with different implementations
+//  for each platform (the existing one would be for Windows)
+
+#include <filesystem>
+#include <map>
+
+#include "TechniqueLoader.h"
+#include "DLLGateway.h"
+#include "DLLFunction_GetTechniqueName.h"
+#include "DLLFunction_CreateTechnique.h"
+
+using namespace std;
+
+namespace fs = filesystem;
+
+// The folder name where TechniqueLoader will look for DLLs to load.
+static const string DLL_PATH = "Techniques";
+
+
+// --------------------------------------------------------------------
+// Technique Loader Implementation: loads all the DLLs found in the DLL
+// folder and maps their names (determined by calling a function in the
+// DLL) to their respective file names.
+//  Example:
+//      { "Undamped"  : "Technique_Undamped" },
+//      { "Damped" : "Technique_Damped" },
+//
+// Then, client can load any DLL by name on demand.
+class TechniqueLoader::Impl {
+public:
+    Impl();
+
+    void LoadDLLByName(string dllName);
+
+    DLLGateway dllGateway;
+    DLLFunction_CreateTechnique techniqueCreator;
+    DLLFunction_GetTechniqueName nameGetter;
+
+    map<string, string> mapNameToDLLName;
+
+private:
+    void LoadAllDLLNames();
+    void AddDLLToNameMap(string dllName);
+
+};
+
+
+TechniqueLoader::Impl::Impl() {
+    LoadAllDLLNames();
+}
+
+
+void TechniqueLoader::Impl::LoadAllDLLNames() {
+    mapNameToDLLName.clear();
+
+    // Load all the DLLs found in the designated DLL folder
+    if (!fs::exists(DLL_PATH))
+        fs::create_directory(DLL_PATH);
+
+    vector<string> dllNames;
+    for (const auto& dllPath : fs::directory_iterator(DLL_PATH))
+        dllNames.push_back(dllPath.path().filename().string());
+
+    // Map all the DLL's IDs to their names
+    for (const auto& dllName : dllNames)
+        AddDLLToNameMap(dllName);
+}
+
+void TechniqueLoader::Impl::AddDLLToNameMap(string dllName) {
+    LoadDLLByName(dllName);
+    if (dllGateway.LoadSuccessful()) {
+        string name = nameGetter.Get();
+        mapNameToDLLName[name] = dllName;
+    }
+}
+
+void TechniqueLoader::Impl::LoadDLLByName(string dllName) {
+    dllGateway.LoadDLL(DLL_PATH + "\\" + dllName);
+
+    // Set the dll for all the functions that use it
+    if (dllGateway.LoadSuccessful()) {
+        nameGetter.SetDLL(dllGateway.GetDLL());
+        techniqueCreator.SetDLL(dllGateway.GetDLL());
+    }
+}
+// ------------------------------------------------------------------
+
+
+
+
+
+TechniqueLoader::TechniqueLoader() {
+    impl = make_unique<Impl>();
+}
+
+TechniqueLoader::~TechniqueLoader() {
+}
+
+vector<string> TechniqueLoader::GetAllAvailableTechniques() {
+    vector<string> techniqueNames;
+    for (auto& [id, _] : impl->mapNameToDLLName)
+        techniqueNames.push_back(id);
+    return techniqueNames;
+}
+
+void TechniqueLoader::LoadTechniqueByName(std::string name) {
+    string dllName = impl->mapNameToDLLName[name];
+    impl->LoadDLLByName(dllName);
+}
+
+bool TechniqueLoader::LoadSuccesssful() {
+    return impl->dllGateway.LoadSuccessful();
+}
+
+TechniqueInterface* TechniqueLoader::GetTechnique() {
+    return impl->techniqueCreator.Get();
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_Console\BouncyBallStudio_Console.cpp ===
+
+#include <iostream>
+
+//////////////////////////
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+//////////////////////////
+
+
+#include "HeightPresenters/HeightText.h"
+#include "HeightPresenters/HeightMeter.h"
+#include "Techniques/Technique_Undamped.h"
+#include "Stage.h"
+
+
+using namespace std;
+
+
+//typedef int (__cdecl* FunAdd) (int a, int b);
+typedef int (*FunAdd) (int a, int b);
+//typedef char const* (__cdecl* GetGreeting) ();
+//typedef int (__cdecl* GetNum) ();
+
+
+
+int main() {
+
+
+	HMODULE hModule;
+
+	hModule = LoadLibrary(TEXT("Technique_Damped.dll"));
+	if (NULL == hModule) {
+		cout << "Load lib failed..." << endl;
+	}
+	else {
+
+		FunAdd AdditionFunction = (FunAdd)GetProcAddress(hModule, "Addition");
+		if (AdditionFunction != NULL)
+			cout << AdditionFunction(14, 290) << endl;
+
+		/*GetGreeting GreetingFunction = (GetGreeting)GetProcAddress(hModule, "GetGreeting");
+		if (GreetingFunction != NULL)
+			cout << GreetingFunction() << endl;
+
+		GetNum NumFunction = (GetNum)GetProcAddress(hModule, "GetNum");
+		if (NumFunction != NULL)
+			cout << NumFunction() << endl;*/
+
+		FreeLibrary(hModule);
+	}
+
+
+    //LoadAndCallSomeFunction(0, 0);
+
+	
+	//////////////////////////
+
+
+
+
+
+	shared_ptr<Technique_Undamped> technique = make_shared<Technique_Undamped>();
+
+	shared_ptr<HeightText> heightText = make_shared<HeightText>();
+	shared_ptr<HeightMeter> heightMeter = make_shared<HeightMeter>();
+
+	technique->AddDataOutputInterface(heightText);
+	technique->AddDataOutputInterface(heightMeter);
+
+	shared_ptr<Stage> stage = make_shared<Stage>(technique);
+
+	stage->Start();
+
+	this_thread::sleep_for(chrono::seconds(2));
+
+	stage->Stop();
+
+    std::cout << "Hello World!\n";
+
+	return 0;
+}
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_Console\HeightPresenters\HeightMeter.h ===
+#pragma once
+
+#include "BallStateDataOutput\BallStateDataOutputInterface.h"
+
+
+class HeightMeter : public BallStateDataOutputInterface {
+
+public:
+	void Present(const StateData& data) override;
+
+	// Set the maximum height that can be displayed. If the actual height is
+	// higher than this maximum, it will not appear in view.
+	void SetMaxHeight(double max_height);
+
+	// Set the size of the height display.
+	void SetMaxCharactersWidth(int max_characters_width);
+
+
+protected:
+
+	double maxHeight = 10.0;
+	int maxCharactersWidth = 50;
+
+	std::string GetHeightAsStringMeter(const StateData& data);
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_Console\HeightPresenters\HeightText.h ===
+#pragma once
+
+#include "BallStateDataOutput\BallStateDataOutputInterface.h"
+
+
+class HeightText : public BallStateDataOutputInterface {
+
+public:
+	void Present(const StateData& data) override;
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_Console\HeightPresenters\HeightMeter.cpp ===
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+
+#include "HeightMeter.h"
+
+using namespace std;
+
+
+void HeightMeter::Present(const StateData& data) {
+	cout << GetHeightAsStringMeter(data) << "\n";
+}
+
+void HeightMeter::SetMaxHeight(double max_height) {
+	maxHeight = max_height;
+}
+
+void HeightMeter::SetMaxCharactersWidth(int max_characters_width) {
+	maxCharactersWidth = max(max_characters_width, 1);
+}
+
+string HeightMeter::GetHeightAsStringMeter(const StateData& data) {
+
+    double height = data.GetFieldValueByName("Height");
+
+    int characterIndex = int(maxCharactersWidth * (height / maxHeight));
+
+    string positionString;
+    for (int i = 0; i < maxCharactersWidth; i++)
+        positionString += ((i == characterIndex) ? 'O' : '.');
+
+    return positionString;
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_Console\HeightPresenters\HeightText.cpp ===
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+
+#include "HeightText.h"
+
+using namespace std;
+
+
+void HeightText::Present(const StateData& data) {
+    stringstream s;
+    s << setw(4) << setprecision(2) << fixed << data.GetFieldValueByName("Height") << " m";
+    cout << "[ " << s.str() << " ]" << endl;
+}
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\AddViewPanel.h ===
+#pragma once
+
+#include "wx/wx.h"
+#include "../TechniqueInterface/TechniqueInterface.h"
+
+
+class AddViewPanel : public wxPanel {
+
+public:
+	AddViewPanel(wxWindow* parent, wxPanel* view_panel_container);
+
+	wxPanel* GetNewView(TechniqueInterface* technique);
+
+
+protected:
+	// Parent panel where the view panels will be contained
+	wxPanel* ViewPanelContainer;
+
+	wxStaticText* AddViewLabel;
+	wxChoice* AddViewChoices;
+	wxTextCtrl* AddViewDataNameTextCtrl;
+	wxButton* AddViewButton;
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\BouncyBallApp.h ===
+#pragma once
+
+#include "wx/wx.h"
+
+
+class BouncyBallApp : public wxApp {
+
+public:
+	virtual bool OnInit();
+
+};
+
+DECLARE_APP(BouncyBallApp)
+
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\GUI_Assets.h ===
+#pragma once
+
+#include "wx/wx.h"
+
+const wxString FONT_FAMILY = wxT("Segoe UI Semibold");
+
+const wxFont FONT_SMALL = wxFont(9, 74, 90, 92, false, FONT_FAMILY);
+const wxFont FONT_MEDIUM = wxFont(10, 74, 90, 92, false, FONT_FAMILY);
+const wxFont FONT_LARGE = wxFont(12, 74, 90, 92, false, FONT_FAMILY);
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\MainWindow.h ===
+#pragma once
+
+#include <memory>
+
+#include "wx/wx.h"
+#include "wx/frame.h"
+
+#include "AddViewPanel.h"
+#include "Stage.h"
+#include "TechniqueLoader.h"
+
+
+class MainWindow : public wxFrame {
+
+protected:
+	TechniqueLoader loader;
+
+	TechniqueInterface* technique = nullptr;
+	std::shared_ptr<Stage> stage;
+
+	wxPanel* TitlePanel;
+	wxStaticText* titleText;
+	wxPanel* ControlsPanel;
+	wxButton* StepButton;
+	wxButton* StartButton;
+	wxStaticText* SpeedLabel;
+	wxSlider* SpeedSlider;
+	AddViewPanel* addViewPanel;
+
+	wxPanel* StatesPanel;
+	wxBoxSizer* statesSizer;
+
+	wxVector<wxPanel*> StateViews;
+
+	void LoadStage();
+
+	void OnStepButtonClicked(wxCommandEvent& evt);
+	void OnStartButtonClicked(wxCommandEvent& evt);
+	void OnSpeedSliderMoved(wxCommandEvent& evt);
+	void OnAddViewClicked(wxCommandEvent& evt);
+
+public:
+	MainWindow();
+	~MainWindow();
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\AddViewPanel.cpp ===
+#include <string>
+
+#include "AddViewPanel.h"
+#include "GUI_Assets.h"
+#include "StateViews/CanvasView.h"
+#include "StateViews/SliderView.h"
+#include "StateViews/SliderView_Unsigned.h"
+#include "StateViews/TextView.h"
+
+using namespace std; 
+
+const wxString CHOICE_CANVAS = "Canvas";
+const wxString CHOICE_SLIDER = "Slider";
+const wxString CHOICE_SLIDER_UNSIGNED = "Slider (Unsigned)";
+const wxString CHOICE_TEXT = "Text";
+
+
+
+AddViewPanel::AddViewPanel(wxWindow* parent, wxPanel* view_panel_container) :
+	wxPanel(parent, wxID_ANY),
+	ViewPanelContainer(view_panel_container)
+{
+
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+
+	AddViewLabel = new wxStaticText(this, wxID_ANY, "Add a new view");
+	sizer->Add(AddViewLabel, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 4);
+	
+	wxArrayString choices;
+	choices.Add(CHOICE_CANVAS);
+	choices.Add(CHOICE_SLIDER);
+	choices.Add(CHOICE_SLIDER_UNSIGNED);
+	choices.Add(CHOICE_TEXT);
+
+	AddViewChoices = new wxChoice(this, wxID_ANY, wxDefaultPosition,
+		wxDefaultSize, choices);
+	sizer->Add(AddViewChoices, 0, wxALL, 3);
+
+	AddViewDataNameTextCtrl = new wxTextCtrl(this, wxID_ANY);
+	sizer->Add(AddViewDataNameTextCtrl, 0, wxALL, 3);
+
+	AddViewButton = new wxButton(this, wxID_ANY, "Add view");
+	sizer->Add(AddViewButton, 0, wxALL, 5);
+
+	
+	SetSizer(sizer);
+	Layout();
+
+}
+
+
+wxPanel* AddViewPanel::GetNewView(TechniqueInterface* technique) {
+
+	wxString viewName = AddViewDataNameTextCtrl->GetValue();
+
+
+	// Create new panel, sizer, and label to hold new view
+
+	wxPanel* ViewStatePanel = new wxPanel(ViewPanelContainer, 
+		wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		wxRAISED_BORDER | wxTAB_TRAVERSAL);
+
+	wxBoxSizer* viewStateSizer = new wxBoxSizer(wxVERTICAL);
+
+	wxStaticText* StateLabel = new wxStaticText(ViewStatePanel, wxID_ANY, viewName, wxDefaultPosition, wxDefaultSize, 0);
+	StateLabel->SetFont(FONT_SMALL);
+	viewStateSizer->Add(StateLabel, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
+
+
+	// Create new widget to represent data based on user's choice
+
+	wxString typeChoice = AddViewChoices->GetStringSelection();
+
+	if (typeChoice == CHOICE_TEXT) {
+		TextView* tv = new TextView(ViewStatePanel);
+		tv->SetFieldName(string(viewName));
+		tv->SetUnits("m");
+		tv->SetFont(FONT_MEDIUM);
+		viewStateSizer->Add(tv, 0, wxALL, 5);
+		technique->AddDataOutputInterface(tv);
+	}
+	else if (typeChoice == CHOICE_SLIDER) {
+		SliderView* sv = new SliderView(ViewStatePanel);
+		sv->SetFieldName(string(viewName));
+		sv->SetScaling(20);
+		viewStateSizer->Add(sv, 0, wxALL, 5);
+		technique->AddDataOutputInterface(sv);
+	}
+	else if (typeChoice == CHOICE_SLIDER_UNSIGNED) {
+		SliderView_Unsigned* sv = new SliderView_Unsigned(ViewStatePanel);
+		sv->SetFieldName(string(viewName));
+		sv->SetScaling(10);
+		viewStateSizer->Add(sv, 0, wxALL, 5);
+		technique->AddDataOutputInterface(sv);
+	}
+	else if (typeChoice == CHOICE_CANVAS) {
+		CanvasView* cv = new CanvasView(ViewStatePanel);
+		cv->SetFieldName(string(viewName));
+		viewStateSizer->Add(cv, 0, wxALL, 5);
+		technique->AddDataOutputInterface(cv);
+	}
+
+	ViewStatePanel->SetSizer(viewStateSizer);
+	ViewStatePanel->Layout();
+	viewStateSizer->Fit(ViewStatePanel);
+
+	return ViewStatePanel;
+}
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\BouncyBallApp.cpp ===
+#include "BouncyBallApp.h"
+
+#include "MainWindow.h"
+
+
+IMPLEMENT_APP(BouncyBallApp)
+
+
+bool BouncyBallApp::OnInit() {
+
+    MainWindow* mainWindow = new MainWindow();
+    mainWindow->Show(true);
+
+    return true;
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\MainWindow.cpp ===
+#include "wx/gbsizer.h"
+
+#include "MainWindow.h"
+#include "GUI_Assets.h"
+
+using namespace std;
+
+
+
+MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, "Bouncy Ball Studio", wxDefaultPosition, wxDefaultSize) {
+
+
+	wxBoxSizer* frameSizer = new wxBoxSizer(wxVERTICAL);
+
+	wxGridBagSizer* mainPanelsSizer = new wxGridBagSizer(0, 0);
+
+
+	//-------------------------------------------------------------------------
+	// Title panel - top left
+
+	TitlePanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+
+	wxBoxSizer* titleSizer = new wxBoxSizer(wxVERTICAL);
+
+	titleText = new wxStaticText(TitlePanel, wxID_ANY, wxT("Bouncy Ball Studio"), wxDefaultPosition, wxDefaultSize, 0);
+	titleText->SetFont(FONT_LARGE);
+	titleSizer->Add(titleText, 0, wxALL, 5);
+
+	TitlePanel->SetSizer(titleSizer);
+	TitlePanel->Layout();
+	titleSizer->Fit(TitlePanel);
+	mainPanelsSizer->Add(TitlePanel, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxEXPAND, 5);
+
+
+	//-------------------------------------------------------------------------
+	// States panel - right
+
+	StatesPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	StatesPanel->SetBackgroundColour(wxColour(224, 224, 224));
+
+	statesSizer = new wxBoxSizer(wxHORIZONTAL);
+
+
+	//-------------------------------------------------------------------------
+	// Controls panel - bottom left
+
+	ControlsPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	wxBoxSizer* controlsPanelSizer = new wxBoxSizer(wxVERTICAL);
+
+	StepButton = new wxButton(ControlsPanel, wxID_ANY, wxT("Step"), wxDefaultPosition, wxDefaultSize, 0);
+	StepButton->Bind(wxEVT_BUTTON, &MainWindow::OnStepButtonClicked, this);
+	StepButton->SetFont(FONT_MEDIUM);
+	StepButton->SetBackgroundColour(wxColour(128, 201, 255));
+	controlsPanelSizer->Add(StepButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
+
+	StartButton = new wxButton(ControlsPanel, wxID_ANY, wxT("Start"), wxDefaultPosition, wxDefaultSize, 0);
+	StartButton->Bind(wxEVT_BUTTON, &MainWindow::OnStartButtonClicked, this);
+	StartButton->SetFont(FONT_MEDIUM);
+	StartButton->SetBackgroundColour(wxColour(0, 202, 0));
+	controlsPanelSizer->Add(StartButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
+
+	SpeedLabel = new wxStaticText(ControlsPanel, wxID_ANY, wxT("Speed"), wxDefaultPosition, wxDefaultSize, 0);
+	SpeedLabel->SetFont(FONT_SMALL);
+	controlsPanelSizer->Add(SpeedLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 5);
+
+	SpeedSlider = new wxSlider(ControlsPanel, wxID_ANY, 5, 1, 10, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+	SpeedSlider->Bind(wxEVT_SLIDER, &MainWindow::OnSpeedSliderMoved, this);
+	controlsPanelSizer->Add(SpeedSlider, 0, wxALL, 5);
+
+
+	addViewPanel = new AddViewPanel(ControlsPanel, StatesPanel);
+	Bind(wxEVT_BUTTON, &MainWindow::OnAddViewClicked, this);
+	controlsPanelSizer->Add(addViewPanel, 0, wxALL, 5);
+
+
+	ControlsPanel->SetSizer(controlsPanelSizer);
+	ControlsPanel->Layout();
+	controlsPanelSizer->Fit(ControlsPanel);
+	mainPanelsSizer->Add(ControlsPanel, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL, 5);
+
+
+	// Load the technique and stage
+
+	LoadStage();
+	if (!technique)
+		Close();
+	stage = make_shared<Stage>(technique);
+
+
+	StatesPanel->SetSizer(statesSizer);
+	StatesPanel->Layout();
+	statesSizer->Fit(StatesPanel);
+	mainPanelsSizer->Add(StatesPanel, wxGBPosition(0, 1), wxGBSpan(2, 1), wxEXPAND | wxALL, 5);
+
+	frameSizer->Add(mainPanelsSizer, 0, 0, 5);
+
+	this->SetSizer(frameSizer);
+	this->Layout();
+	frameSizer->Fit(this);
+
+	this->Centre(wxBOTH);
+
+}
+
+MainWindow::~MainWindow() {
+	if (technique)
+		technique->Destroy();
+}
+
+
+void MainWindow::LoadStage() {
+
+	// Load technique
+	vector<string> techniqueNames = loader.GetAllAvailableTechniques();
+	if (techniqueNames.size() == 0) {
+		wxMessageBox("No techniques found...");
+	}
+	else {
+
+		wxArrayString wxStringTechniques;
+		for (auto& name : techniqueNames)
+			wxStringTechniques.Add(name);
+
+		wxSingleChoiceDialog choiceDialog(nullptr, "Select technique to load:", "Load Technique", wxStringTechniques);
+
+		if (choiceDialog.ShowModal() == wxID_OK) {
+
+			string selectedTechniqueName = string(choiceDialog.GetStringSelection());
+
+			loader.LoadTechniqueByName(selectedTechniqueName);
+
+			if (loader.LoadSuccesssful())
+				technique = loader.GetTechnique();
+
+		}
+	}
+}
+
+
+void MainWindow::OnStepButtonClicked(wxCommandEvent& evt) {
+	if (stage)
+		stage->Step();
+}
+
+void MainWindow::OnStartButtonClicked(wxCommandEvent& evt) {
+	if (stage) {
+
+		if (stage->IsRunning()) {
+			stage->Stop();
+			StartButton->SetBackgroundColour(wxColor(0, 200, 0)); // Green
+			StartButton->SetLabelText(wxT("Start"));
+		}
+		else {
+			stage->Start();
+			StartButton->SetBackgroundColour(wxColor(255, 0, 0)); // Red
+			StartButton->SetLabelText(wxT("Stop"));
+		}
+
+	}
+}
+
+void MainWindow::OnSpeedSliderMoved(wxCommandEvent& evt) {
+	if (stage) {
+		int newSpeed = SpeedSlider->GetValue();
+		stage->SetSpeed(newSpeed);
+	}
+}
+
+void MainWindow::OnAddViewClicked(wxCommandEvent& evt) {
+
+	wxPanel* NewViewPanel = addViewPanel->GetNewView(technique);
+
+	statesSizer->Add(NewViewPanel, 0, wxALL | wxEXPAND, 5);
+	StateViews.push_back(NewViewPanel);
+
+	this->SetSize(this->GetBestSize());
+	this->Layout();
+	this->Refresh();
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\CanvasView.h ===
+#pragma once
+
+#include <vector>
+
+#include "wx/wx.h"
+#include "../BallStateInterface/BallStateDataOutput/BallStateDataOutputInterface.h"
+
+
+class CanvasView : public BallStateDataOutputInterface, public wxPanel {
+
+public:
+
+    CanvasView(wxWindow* parent);
+
+    void paintEvent(wxPaintEvent& evt);
+    void paintNow();
+    void render(wxDC& dc);
+
+    void Clear();
+
+protected:
+    int canvasSize = -1;
+    int value = -1;
+
+    virtual void Present(const StateData& data) override;
+
+};
+
+
+
+
+
+
+
+
+//enum TuneComponentType {
+//    AutotuneType_Motor,
+//    AutotuneType_TEC
+//};
+//
+//
+//class CanvasView : public wxPanel {
+//
+//private:
+//    TuneComponentType type;
+//    int width;
+//    int height;
+//    int padding;
+//    int innerPadding;
+//    std::vector<float> x_points;
+//    std::vector<float> y_points;
+//    float start_x;
+//    float start_y;
+//    float finish_x;
+//    float finish_y;
+//    float min_x;
+//    float min_y;
+//    float max_x;
+//    float max_y;
+//
+//
+//public:
+//
+//    CanvasView(
+//        TuneComponentType _type,
+//        wxWindow* parent,
+//        wxWindowID winid = wxID_ANY,
+//        const wxPoint& pos = wxDefaultPosition,
+//        const wxSize& size = wxDefaultSize,
+//        long style = wxTAB_TRAVERSAL | wxBORDER_THEME
+//    );
+//
+//    void paintEvent(wxPaintEvent& evt);
+//    void paintNow();
+//    void render(wxDC& dc);
+//
+//    void Init();
+//
+//    void RefreshAll();
+//
+//    void Clear();
+//
+//    void AddPoint(float x, float y);
+//    void SetStartX(float x);
+//    void SetStartY(float y);
+//    void SetFinishX(float x);
+//    void SetFinishY(float y);
+//    int ScaleX(float value);
+//    int ScaleY(float value);
+//    int ScaleValue(float value, float valueMin, float valueMax, int pixelRange);
+//    void Plot(wxDC& dc, int x1, int y1, int x2, int y2);
+//
+//    float FindMin(std::vector<float> values);
+//    float FindMax(std::vector<float> values);
+//
+//};
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\SliderView.h ===
+#pragma once
+
+#include "wx/wx.h"
+
+#include "../BallStateInterface/BallStateDataOutput/BallStateDataOutputInterface.h"
+
+
+class SliderView : public BallStateDataOutputInterface, public wxSlider {
+
+public:
+	SliderView(wxWindow* parent);
+
+	// How much to scale the value on a scale between 0 - 100
+	// Example, if your data range is between 0 - 5, use a scaling of about 20
+	void SetScaling(int _scaling);
+
+protected:
+	static const int SLIDER_BASE_RANGE = 100;
+	int scaling = 1;
+
+	virtual void Present(const StateData& data) override;
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\SliderView_Unsigned.h ===
+#pragma once
+
+#include "SliderView.h"
+
+
+class SliderView_Unsigned : public SliderView {
+
+public:
+	SliderView_Unsigned(wxWindow* parent);
+
+protected:
+	virtual void Present(const StateData& data) override;
+
+};
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\TextView.h ===
+
+#pragma once
+
+#include "wx\wx.h"
+
+#include "../BallStateInterface/BallStateDataOutput/BallStateDataOutputInterface.h"
+
+
+class TextView : public BallStateDataOutputInterface, public wxStaticText {
+
+public:
+	TextView(wxWindow* parent);
+
+	void SetUnits(const std::string _units);
+
+protected:
+	void Present(const StateData& data) override;
+	std::string units;
+
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\CanvasView.cpp ===
+#include "CanvasView.h"
+
+const int DEFAULT_CANVAS_SIZE = 200;
+
+
+CanvasView::CanvasView(wxWindow* parent) :
+    wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(DEFAULT_CANVAS_SIZE, DEFAULT_CANVAS_SIZE), wxBORDER_THEME) {
+
+    canvasSize = DEFAULT_CANVAS_SIZE;
+
+    SetSize(canvasSize, canvasSize);
+
+    Bind(wxEVT_PAINT, &CanvasView::paintEvent, this);
+
+    paintNow();
+    this->Layout();
+    this->Refresh();
+}
+
+void CanvasView::paintEvent(wxPaintEvent& evt) {
+    wxPaintDC dc(this);
+    render(dc);
+    evt.Skip();
+}
+
+void CanvasView::paintNow() {
+    wxClientDC dc(this);
+    render(dc);
+}
+
+void CanvasView::render(wxDC& dc) {
+
+    static const int NUM_SQUARES_PER_SIDE = 20;
+
+    int squareSize = canvasSize / NUM_SQUARES_PER_SIDE;
+
+    
+    for (int i = 0; i < NUM_SQUARES_PER_SIDE; i++) {
+
+        for (int j = 0; j < NUM_SQUARES_PER_SIDE; j++) {
+
+            //if ((i + j) % 2 == 0)
+            if ((i + j) == value)
+                dc.SetBrush(*wxBLACK_BRUSH);
+            else 
+                dc.SetBrush(*wxWHITE_BRUSH);
+
+            dc.DrawRectangle(i*squareSize, j*squareSize, squareSize, squareSize);
+
+        }
+
+    }
+
+    //// Title
+    //if (type == AutotuneType_Motor) {
+    //    dc.DrawText(_("Power vs. Motor Index"), padding + 5, 1);
+    //}
+    //else {
+    //    dc.DrawText(_("Power vs. Temperature"), padding + 5, 1);
+    //}
+
+    //// Axes
+    //dc.SetPen(wxPen(TEXT_COLOR_GRAY, 2, wxPENSTYLE_SOLID));
+
+    //// X-axis
+    //Plot(dc, 0, 0 - padding, width, 0 - padding);
+
+    //// Y-axis
+    //Plot(dc, 0, 0 - padding, 0, height - padding);
+
+    //if (x_points.size() < 2)
+    //    return;
+
+    //// Data plots
+    //min_x = min(FindMin(x_points), start_x);
+    //min_y = FindMin(y_points);
+
+    //max_x = max(FindMax(x_points), start_x);
+    //max_y = FindMax(y_points);
+
+    //// Plot intermediate values
+    //dc.SetPen(wxPen(TEXT_COLOR_BLUE, 2));
+    //for (int i = 0; i < x_points.size() - 1; i++) {
+    //    Plot(dc, ScaleX(x_points[i]), ScaleY(y_points[i]), ScaleX(x_points[i + 1]), ScaleY(y_points[i + 1]));
+    //}
+
+    //if (x_points.size() > 3) {
+
+    //    // Plot starting value lines
+    //    dc.SetPen(wxPen(TEXT_COLOR_LIGHT_GRAY, 1, wxPENSTYLE_SOLID));
+    //    if (start_x != -1)
+    //        Plot(dc, ScaleX(start_x), 0 - 2 * padding, ScaleX(start_x), height);
+    //    if (start_y != -1)
+    //        Plot(dc, 0 - padding, ScaleY(start_y), width, ScaleY(start_y));
+
+    //    // Plot final value lines
+    //    dc.SetPen(wxPen(TEXT_COLOR_GREEN, 1, wxPENSTYLE_SOLID));
+    //    if (finish_x != -1)
+    //        Plot(dc, ScaleX(finish_x), 0 - 2 * padding, ScaleX(finish_x), height);
+    //    if (finish_y != -1)
+    //        Plot(dc, 0 - padding, ScaleY(finish_y), width, ScaleY(finish_y));
+    //}
+}
+
+void CanvasView::Clear() {
+    this->Refresh();
+}
+
+void CanvasView::Present(const StateData& data) {
+    value = data.GetFieldValueByName(fieldName);
+    paintNow();
+}
+
+
+
+
+
+
+
+
+
+//#include "CanvasView.h"
+//
+//BEGIN_EVENT_TABLE(CanvasView, wxPanel)
+//
+//EVT_PAINT(CanvasView::paintEvent)
+//
+//END_EVENT_TABLE()
+//
+//
+//
+//CanvasView::CanvasView(
+//    TuneComponentType _type,
+//    wxWindow* parent,
+//    wxWindowID winid,
+//    const wxPoint& pos,
+//    const wxSize& size,
+//    long style) :
+//    wxPanel(parent, winid, pos, size, style) {
+//
+//    padding = 10;
+//    innerPadding = 5;
+//
+//    type = _type;
+//    width = size.x - padding;
+//    height = size.y - padding;
+//
+//    start_x = -1;
+//    start_y = -1;
+//    finish_x = -1;
+//    finish_y = -1;
+//    min_x = -1;
+//    min_y = -1;
+//    max_x = -1;
+//    max_y = -1;
+//
+//
+//    this->Layout();
+//    this->Refresh();
+//
+//    Init();
+//}
+//
+//void CanvasView::paintEvent(wxPaintEvent& evt) {
+//    wxPaintDC dc(this);
+//    render(dc);
+//    evt.Skip();
+//}
+//
+//void CanvasView::paintNow() {
+//    wxClientDC dc(this);
+//    render(dc);
+//}
+//
+//void CanvasView::render(wxDC& dc) {
+//
+//    // Title
+//    if (type == AutotuneType_Motor) {
+//        dc.DrawText(_("Power vs. Motor Index"), padding + 5, 1);
+//    }
+//    else {
+//        dc.DrawText(_("Power vs. Temperature"), padding + 5, 1);
+//    }
+//
+//    // Axes
+//    dc.SetPen(wxPen(TEXT_COLOR_GRAY, 2, wxPENSTYLE_SOLID));
+//
+//    // X-axis
+//    Plot(dc, 0, 0 - padding, width, 0 - padding);
+//
+//    // Y-axis
+//    Plot(dc, 0, 0 - padding, 0, height - padding);
+//
+//    if (x_points.size() < 2)
+//        return;
+//
+//    // Data plots
+//    min_x = min(FindMin(x_points), start_x);
+//    min_y = FindMin(y_points);
+//
+//    max_x = max(FindMax(x_points), start_x);
+//    max_y = FindMax(y_points);
+//
+//    // Plot intermediate values
+//    dc.SetPen(wxPen(TEXT_COLOR_BLUE, 2));
+//    for (int i = 0; i < x_points.size() - 1; i++) {
+//        Plot(dc, ScaleX(x_points[i]), ScaleY(y_points[i]), ScaleX(x_points[i + 1]), ScaleY(y_points[i + 1]));
+//    }
+//
+//    if (x_points.size() > 3) {
+//
+//        // Plot starting value lines
+//        dc.SetPen(wxPen(TEXT_COLOR_LIGHT_GRAY, 1, wxPENSTYLE_SOLID));
+//        if (start_x != -1)
+//            Plot(dc, ScaleX(start_x), 0 - 2 * padding, ScaleX(start_x), height);
+//        if (start_y != -1)
+//            Plot(dc, 0 - padding, ScaleY(start_y), width, ScaleY(start_y));
+//
+//        // Plot final value lines
+//        dc.SetPen(wxPen(TEXT_COLOR_GREEN, 1, wxPENSTYLE_SOLID));
+//        if (finish_x != -1)
+//            Plot(dc, ScaleX(finish_x), 0 - 2 * padding, ScaleX(finish_x), height);
+//        if (finish_y != -1)
+//            Plot(dc, 0 - padding, ScaleY(finish_y), width, ScaleY(finish_y));
+//    }
+//}
+//
+//void CanvasView::Init() {
+//}
+//
+//void CanvasView::RefreshAll() {
+//}
+//
+//void CanvasView::Clear() {
+//    x_points.clear();
+//    y_points.clear();
+//    start_x = -1;
+//    start_y = -1;
+//    finish_x = -1;
+//    finish_y = -1;
+//    min_x = -1;
+//    min_y = -1;
+//    max_x = -1;
+//    max_y = -1;
+//    this->Refresh();
+//}
+//
+//void CanvasView::SetStartX(float x) {
+//    start_x = x;
+//}
+//
+//void CanvasView::SetStartY(float y) {
+//    start_y = y;
+//}
+//
+//void CanvasView::SetFinishX(float x) {
+//    finish_x = x;
+//}
+//
+//void CanvasView::SetFinishY(float y) {
+//    finish_y = y;
+//}
+//
+//void CanvasView::AddPoint(float x, float y) {
+//    x_points.push_back(x);
+//    y_points.push_back(y);
+//    this->Refresh();
+//}
+//
+//float CanvasView::FindMin(vector<float> values) {
+//    float min = 99999999999;
+//    for (float v : values) {
+//        if (v < min) {
+//            min = v;
+//        }
+//    }
+//    return min;
+//}
+//
+//float CanvasView::FindMax(vector<float> values) {
+//    float max = 0;
+//    for (float v : values) {
+//        if (v > max) {
+//            max = v;
+//        }
+//    }
+//    return max;
+//}
+//
+//int CanvasView::ScaleX(float value) {
+//    // Scale the value to be between the relative range of max and min, and scaled to the width and height of the canvas
+//    return ScaleValue(value, min_x, max_x, width - 2 * padding);
+//}
+//
+//int CanvasView::ScaleY(float value) {
+//    // Scale the value to be between the relative range of max and min, and scaled to the width and height of the canvas
+//    static const int gapUnderTopTitle = 7;
+//    return ScaleValue(value, min_y, max_y, height - 2 * padding - gapUnderTopTitle);
+//}
+//
+//int CanvasView::ScaleValue(float value, float valueMin, float valueMax, int pixelRange) {
+//    // Scale the value to be between the relative range of max and min, and scaled to the width and height of the canvas
+//    float valueRange = valueMax - valueMin;
+//    float valueRelativePosition = value - valueMin;
+//    float valueScaled = valueRelativePosition / valueRange;
+//    int pixelPosition = static_cast<int>(valueScaled * pixelRange);
+//    return pixelPosition;
+//}
+//
+//void CanvasView::Plot(wxDC& dc, int x1, int y1, int x2, int y2) {
+//    // Adds padding and inverts y axis
+//    dc.DrawLine(x1 + padding, height - (y1 + padding), x2 + padding, height - (y2 + padding));
+//}
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\SliderView.cpp ===
+#include "SliderView.h"
+
+
+SliderView::SliderView(wxWindow* parent) :
+	wxSlider(parent, wxID_ANY, 
+		0, 0, SLIDER_BASE_RANGE,
+		wxDefaultPosition, wxDefaultSize, 
+		wxSL_BOTH | wxSL_LABELS | wxSL_VERTICAL | wxSL_INVERSE
+	) {}
+
+void SliderView::SetScaling(int _scaling) {
+	scaling = _scaling;
+}
+
+void SliderView::Present(const StateData& data) {
+	double value = data.GetFieldValueByName(fieldName);
+	SetValue(int(value * scaling) + SLIDER_BASE_RANGE / 2);
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\SliderView_Unsigned.cpp ===
+#include "SliderView_Unsigned.h"
+
+
+SliderView_Unsigned::SliderView_Unsigned(wxWindow* parent) : SliderView(parent) {}
+
+
+void SliderView_Unsigned::Present(const StateData& data) {
+	SetValue(int(data.GetFieldValueByName(fieldName) * scaling));
+}
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\BouncyBallStudio_GUI\StateViews\TextView.cpp ===
+#include <iomanip>
+#include <sstream>
+#include <string>
+
+#include "TextView.h"
+
+using namespace std;
+
+
+TextView::TextView(wxWindow* parent) :
+	wxStaticText(parent, wxID_ANY, " - ", wxDefaultPosition, wxDefaultSize, 0) {
+}
+
+
+void TextView::Present(const StateData& data) {
+	stringstream s;
+	s << setw(4) << setprecision(2) << fixed << data.GetFieldValueByName(fieldName) << units;
+	SetLabelText(s.str());
+}
+
+void TextView::SetUnits(const std::string _units) {
+	units = _units;
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\TechniqueInterface\TechniqueInterface.h ===
+#pragma once
+
+#include <memory>
+#include <vector>
+
+#include "../BallStateInterface/BallStateInterface.h"
+#include "../BallStateInterface/BallStateDataOutput/BallStateDataOutputInterface.h"
+#include "../BallStateInterface/BallStateDataOutput/StateData.h"
+
+
+
+class TechniqueInterface {
+
+public:
+	virtual void Step() = 0;
+	virtual void Destroy() = 0;
+
+	__declspec(dllexport) void AddDataOutputInterface(std::shared_ptr<BallStateDataOutputInterface> data_output) {
+		sp_outputs.push_back(data_output);
+	}
+	__declspec(dllexport) void AddDataOutputInterface(BallStateDataOutputInterface* data_output) {
+		p_outputs.push_back(data_output);
+	}
+
+
+protected:
+	std::vector<std::shared_ptr<BallStateInterface>> states;
+
+
+	// Data Output
+
+	// Data
+	StateData stateData;
+	virtual void UpdateData() = 0;
+
+	// Data Outputs (Presenters)
+	// - Need to have two separate data structures for storing output objects:
+	//	 shared pointers and raw pointers, because of how wxWidgets in GUI
+	//	 always uses raw pointers with widgets.
+	std::vector<std::shared_ptr<BallStateDataOutputInterface>> sp_outputs;
+	std::vector<BallStateDataOutputInterface*> p_outputs;
+	void PushDataOut() {
+		for (auto o : sp_outputs)
+			o->Present(stateData);
+		for (auto o : p_outputs)
+			o->Present(stateData);
+	};
+
+};
+
+
+
+
+// Function declarations to be implemented in the C++ file of each
+// Stepper Implementation
+
+extern "C" __declspec(dllexport) TechniqueInterface * __cdecl CreateTechniqueInstance();
+extern "C" __declspec(dllexport) const char* __cdecl GetTechniqueName();
+
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\Technique_Damped\Technique_Damped.h ===
+#pragma once
+
+#include "../TechniqueInterface/TechniqueInterface.h"
+
+//#include "../BallStateInterface/BallStates/BS_Height.h"
+//#include "../BallStateInterface/BallStates/BS_Velocity.h"
+#include "../BallState_Height/BS_Height.h"
+#include "../BallState_Velocity/BS_Velocity.h"
+
+
+class Technique_Damped : public TechniqueInterface {
+	
+public:
+	__declspec(dllexport) Technique_Damped();
+	
+	__declspec(dllexport) void Step() override;
+	__declspec(dllexport) void Destroy() override { delete this; };
+	
+//protected:
+//	std::shared_ptr<BS_Height> height;
+//	std::shared_ptr<BS_Velocity> velocity;
+//	
+//	void UpdateData() override;
+
+private:
+	std::shared_ptr<BS_Height> height;
+	std::shared_ptr<BS_Velocity> velocity;
+
+	void UpdateData() override;
+};
+
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\Technique_Damped\Technique_Damped.cpp ===
+#include "Technique_Damped.h"
+
+using namespace std;
+
+const double ACCELERATION_DUE_TO_GRAVITY = -0.1;
+const int TIME_ELAPSED_PER_STEP = 1;
+const double DAMPENING_PER_BOUNCE = 0.05; // Reduce speed by 5%
+
+
+
+const char* __cdecl GetTechniqueName() {
+	return "Damped";
+}
+
+TechniqueInterface* __cdecl CreateTechniqueInstance() {
+	return new Technique_Damped();
+}
+
+
+
+Technique_Damped::Technique_Damped() {
+
+	height = make_shared<BS_Height>();
+	height->SetHeightInMeters(10);
+	states.push_back(height);
+
+	velocity = make_shared<BS_Velocity>();
+	states.push_back(velocity);
+
+	for (auto& state : states)
+		stateData.AddField(state->GetName());
+}
+
+
+void Technique_Damped::Step() {
+
+	if (height->HitSurface()) {
+		velocity->Reverse();
+		height->Bounce();
+
+		// Apply dampening
+		velocity->SetVelocity(velocity->GetVelocityInMetersPerSecond() * (1.0f - DAMPENING_PER_BOUNCE));
+	}
+
+	velocity->ApplyAcceleration(ACCELERATION_DUE_TO_GRAVITY, TIME_ELAPSED_PER_STEP);
+	height->ApplyVelocity(velocity->GetVelocityInMetersPerSecond(), TIME_ELAPSED_PER_STEP);
+
+	UpdateData();
+	PushDataOut();
+}
+
+
+void Technique_Damped::UpdateData() {
+
+	stateData.SetFieldValue(height->GetName(), height->GetHeightInMeters());
+	stateData.SetFieldValue(velocity->GetName(), velocity->GetVelocityInMetersPerSecond());
+
+}
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\Technique_Undamped\Technique_Undamped.h ===
+#pragma once
+
+#include "../TechniqueInterface/TechniqueInterface.h"
+
+#include "../BallState_Height/BS_Height.h"
+#include "../BallState_Velocity/BS_Velocity.h"
+
+
+class Technique_Undamped : public TechniqueInterface {
+
+public:
+	__declspec(dllexport) Technique_Undamped();
+
+	__declspec(dllexport) void Step() override;
+	__declspec(dllexport) void Destroy() override { delete this; };
+
+private:
+	class Impl;
+	std::shared_ptr<Impl> impl;
+
+	//std::shared_ptr<BS_Height> height;
+	//std::shared_ptr<BS_Velocity> velocity;
+
+	void UpdateData() override;
+};
+
+=== C:\Users\James\Documents\Programming\BouncyBallStudio\Technique_Undamped\Technique_Undamped.cpp ===
+#include <iostream>
+
+#include "Technique_Undamped.h"
+
+using namespace std;
+
+
+const double ACCELERATION_DUE_TO_GRAVITY = -0.1;
+const int TIME_ELAPSED_PER_STEP = 1;
+
+
+
+const char* __cdecl GetTechniqueName() {
+	return "Undamped";
+}
+
+TechniqueInterface* __cdecl CreateTechniqueInstance() {
+	return new Technique_Undamped();
+}
+
+
+
+Technique_Undamped::Technique_Undamped() {
+
+	height = make_shared<BS_Height>();
+	height->SetHeightInMeters(10);
+	states.push_back(height);
+
+	velocity = make_shared<BS_Velocity>();
+	states.push_back(velocity);
+
+	for (auto& state : states)
+		stateData.AddField(state->GetName());
+}
+
+
+void Technique_Undamped::Step() {
+
+	if (height->HitSurface()) {
+		velocity->Reverse();
+		height->Bounce();
+	}
+
+	velocity->ApplyAcceleration(ACCELERATION_DUE_TO_GRAVITY, TIME_ELAPSED_PER_STEP);
+	height->ApplyVelocity(velocity->GetVelocityInMetersPerSecond(), TIME_ELAPSED_PER_STEP);
+
+	UpdateData();
+	PushDataOut();
+}
+
+
+void Technique_Undamped::UpdateData() {
+	stateData.SetFieldValue(height->GetName(), height->GetHeightInMeters());
+	stateData.SetFieldValue(velocity->GetName(), velocity->GetVelocityInMetersPerSecond());
+}

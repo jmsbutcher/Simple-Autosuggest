@@ -1,0 +1,1 @@
+python generate_training_text.py
